@@ -37,10 +37,10 @@ def speak(text):
     else:
         speak("Good Evening sir or madam!")
 
-    asname ="Jasper 1 point o"
+    asname ="DESKTOP ASSISTANT"
     speak("I am your Assistant,")
     speak(asname)
-    print("I am your Voice Assistant,",asname)
+    print("I am your Assistant,",asname)
 def getName():
     global uname
     speak("Can I please know your name?")
