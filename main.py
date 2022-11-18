@@ -1,109 +1,281 @@
-import pyttsx3 #pip install pyttsx3
-import speech_recognition as sr #pip install speechRecognition
-import datetime
-import wikipedia #pip install wikipedia
+import subprocess
+import wolframalpha
+import pyttsx3
+import random
+import speech_recognition as sr
+import wikipedia
 import webbrowser
 import os
+import winshell
+import pyjokes
+import json
+import feedparser
 import smtplib
+import datetime 
+import requests
+from twilio.rest import Client
+from bs4 import BeautifulSoup
+import win32com.client as wincl
+from urllib.request import urlopen
+voiceEngine = pyttsx3.init('sapi5')
+voices = voiceEngine.getProperty('voices')
+voiceEngine.setProperty('voice', voices[1].id)
 
-engine = pyttsx3.init('sapi5')
-voices = engine.getProperty('voices')
-# print(voices[1].id)
-engine.setProperty('voice', voices[0].id)
+def speak(text):
+    voiceEngine.say(text)
+    voiceEngine.runAndWait()
+    def wish():
+    print("Wishing.")
+    time = int(datetime.datetime.now().hour)
+    global uname,asname
+    if time>= 0 and time<12:
+        speak("Good Morning sir or madam!")
 
-
-def speak(audio):
-    engine.say(audio)
-    engine.runAndWait()
-
-
-def wishMe():
-    hour = int(datetime.datetime.now().hour)
-    if hour>=0 and hour<12:
-        speak("Good Morning!")
-
-    elif hour>=12 and hour<18:
-        speak("Good Afternoon!")
+    elif time<18:
+        speak("Good Afternoon sir or madam!")
 
     else:
-        speak("Good Evening!")
+        speak("Good Evening sir or madam!")
 
-    speak("I am Jarvis Sir. Please tell me how may I help you")
+    asname ="Jasper 1 point o"
+    speak("I am your Voice Assistant from DataFlair,")
+    speak(asname)
+    print("I am your Voice Assistant,",asname)
+def getName():
+    global uname
+    speak("Can I please know your name?")
+    uname = takeCommand()
+    print("Name:",uname)
+    speak("I am glad to know you!")
+    columns = shutil.get_terminal_size().columns
+    speak("How can i Help you, ")
+    speak(uname)
 
 def takeCommand():
-    #It takes microphone input from the user and returns string output
-
-    r = sr.Recognizer()
+    recog = sr.Recognizer()
+    
     with sr.Microphone() as source:
-        print("Listening...")
-        r.pause_threshold = 1
-        audio = r.listen(source)
+        print("Listening to the user")
+        recog.pause_threshold = 1
+        userInput = recog.listen(source)
 
     try:
-        print("Recognizing...")
-        query = r.recognize_google(audio, language='en-in')
-        print(f"User said: {query}\n")
+        print("Recognizing the command")
+        command = recog.recognize_google(userInput, language ='en-in')
+        print(f"Command is: {command}\n")
 
     except Exception as e:
-        # print(e)
-        print("Say that again please...")
+        print(e)
+        print("Unable to Recognize the voice.")
         return "None"
-    return query
 
+    return command
 def sendEmail(to, content):
+    print("Sending mail to ", to)
     server = smtplib.SMTP('smtp.gmail.com', 587)
     server.ehlo()
     server.starttls()
-    server.login('youremail@gmail.com', 'your-password')
-    server.sendmail('youremail@gmail.com', to, content)
+    #paste your email id and password in the respective places
+    server.login('your email id', 'password') 
+    server.sendmail('your email id', to, content)
     server.close()
 
-if __name__ == "__main__":
-    wishMe()
-    while True:
-    # if 1:
-        query = takeCommand().lower()
+def getWeather(city_name):
+    cityName=place.get() #getting input of name of the place from user
+    baseUrl = "http://api.openweathermap.org/data/2.5/weather?" #base url from where we extract weather report
+    url = baseUrl + "appid=" + 'd850f7f52bf19300a9eb4b0aa6b80f0d' + "&q=" + cityName  
+    response = requests.get(url)
+    x = response.json()
 
-        # Logic for executing tasks based on query
-        if 'wikipedia' in query:
-            speak('Searching Wikipedia...')
-            query = query.replace("wikipedia", "")
-            results = wikipedia.summary(query, sentences=2)
-            speak("According to Wikipedia")
+    #If there is no error, getting all the weather conditions
+    if x["cod"] != "404":
+        y = x["main"]
+        temp = y["temp"]
+        temp-=273 
+        pressure = y["pressure"]
+        humidity = y["humidity"]
+        desc = x["weather"]
+        description = z[0]["description"]
+        info=(" Temperature= " +str(temp)+"°C"+"\n atmospheric pressure (hPa) ="+str(pressure) +"\n humidity = " +str(humidity)+"%" +"\n description = " +str(description))
+        print(info)
+        speak("Here is the weather report at")
+        speak(city_name)
+        speak(info)
+    else:
+        speak(" City Not Found ")
+
+def getNews():
+    try:
+        response = requests.get('https://www.bbc.com/news')
+  
+        b4soup = BeautifulSoup(response.text, 'html.parser')
+        headLines = b4soup.find('body').find_all('h3')
+        unwantedLines = ['BBC World News TV', 'BBC World Service Radio',
+                    'News daily newsletter', 'Mobile app', 'Get in touch']
+
+        for x in list(dict.fromkeys(headLines)):
+            if x.text.strip() not in unwantedLines:
+                print(x.text.strip())
+    except Exception as e:
+        print(str(e))
+ if __name__ == '__main__':
+
+    uname=''
+    asname=''
+    os.system('cls')
+    wish()
+    getName()
+    print(uname)
+
+    while True:
+
+        command = takeCommand().lower()
+        print(command)
+
+        if "jarvis" in command:
+            wish()
+            
+        elif 'how are you' in command:
+            speak("I am fine, Thank you")
+            speak("How are you, ")
+            speak(uname)
+
+        elif "good morning" in command or "good afternoon" in command or "good evening" in command:
+            speak("A very" +command)
+            speak("Thank you for wishing me! Hope you are doing well!")
+
+        elif 'fine' in command or "good" in command:
+            speak("It's good to know that your fine")
+       
+        elif "who are you" in command:
+            speak("I am your virtual assistant.")
+
+        elif "change my name to" in command:
+            speak("What would you like me to call you, Sir or Madam ")
+            uname = takeCommand()
+            speak('Hello again,')
+            speak(uname)
+        
+        elif "change name" in command:
+            speak("What would you like to call me, Sir or Madam ")
+            assname = takeCommand()
+            speak("Thank you for naming me!")
+
+        elif "what's your name" in command:
+            speak("People call me")
+            speak(assname)
+        
+        elif 'time' in command:
+            strTime = datetime.datetime.now()
+            curTime=str(strTime.hour)+"hours"+str(strTime.minute)+"minutes"+str(strTime.second)+"seconds"
+            speak(uname)
+            speak(f" the time is {curTime}")
+            print(curTime)
+
+        elif 'wikipedia' in command:
+            speak('Searching Wikipedia')
+            command = command.replace("wikipedia", "")
+            results = wikipedia.summary(command, sentences = 3)
+            speak("These are the results from Wikipedia")
             print(results)
             speak(results)
 
-        elif 'open youtube' in query:
+        elif 'open youtube' in command:
+            speak("Here you go, the Youtube is opening\n")
             webbrowser.open("youtube.com")
 
-        elif 'open google' in query:
+        elif 'open google' in command:
+            speak("Opening Google\n")
             webbrowser.open("google.com")
 
-        elif 'open stackoverflow' in query:
-            webbrowser.open("stackoverflow.com")
-
-
-        elif 'play music' in query:
-            music_dir = 'D:\\Non Critical\\songs\\Favorite Songs2'
+        elif 'play music' in command or "play song" in command:
+            speak("Enjoy the music!")
+            music_dir = "C:\\Users\\Music"
             songs = os.listdir(music_dir)
             print(songs)
-            os.startfile(os.path.join(music_dir, songs[0]))
+            random = os.startfile(os.path.join(music_dir, songs[1]))
 
-        elif 'the time' in query:
-            strTime = datetime.datetime.now().strftime("%H:%M:%S")
-            speak(f"Sir, the time is {strTime}")
-
-        elif 'open code' in query:
-            codePath = "C:\\Users\\Haris\\AppData\\Local\\Programs\\Microsoft VS Code\\Code.exe"
-            os.startfile(codePath)
-
-        elif 'email to someone' in query:
+        elif 'joke' in command:
+            speak(pyjokes.get_joke())
+            
+        elif 'mail' in command:
             try:
-                speak("What should I say?")
+                speak("Whom should I send the mail")
+                to = input()
+                speak("What is the body?")
                 content = takeCommand()
-                to = "yourEmail@gmail.com"
                 sendEmail(to, content)
-                speak("Email has been sent!")
+                speak("Email has been sent successfully !")
             except Exception as e:
                 print(e)
-                speak("Sorry my friend. I am not able to send this email")
+                speak("I am sorry, not able to send this email")
+
+        elif 'exit' in command:
+            speak("Thanks for giving me your time")
+            exit()
+
+        elif "will you be my gf" in command or "will you be my bf" in command:
+            speak("I'm not sure about that, may be you should give me some time")
+
+        elif "i love you" in command:
+            speak("Thank you! But, It's a pleasure to hear it from you.")
+
+        elif "weather" in command:
+            speak(" Please tell your city name ")
+            print("City name : ")
+            cityName = takeCommand()
+            getWeather(cityName)
+
+        elif "what is" in command or "who is" in command:
+            
+            client = wolframalpha.Client("API_ID")
+            res = client.query(command)
+
+            try:
+                print (next(res.results).text)
+                speak (next(res.results).text)
+            except StopIteration:
+                print ("No results")
+
+        elif 'search' in command:
+            command = command.replace("search", "")
+            webbrowser.open(command)
+
+        elif 'news' in command:
+            getNews()
+        
+        elif "don't listen" in command or "stop listening" in command:
+            speak("for how much time you want to stop me from listening commands")
+            a = int(takeCommand())
+            time.sleep(a)
+            print(a)
+
+        elif "camera" in command or "take a photo" in command:
+            ec.capture(0, "Jarvis Camera ", "img.jpg")
+        
+        elif 'shutdown system' in command:
+                speak("Hold On a Sec ! Your system is on its way to shut down")
+                subprocess.call('shutdown / p /f')
+
+        elif "restart" in command:
+            subprocess.call(["shutdown", "/r"])
+
+        elif "sleep" in command:
+            speak("Setting in sleep mode")
+            subprocess.call("shutdown / h")
+
+        elif "write a note" in command:
+            speak("What should i write, sir")
+            note = takeCommand()
+            file = open('jarvis.txt', 'w')
+            speak("Sir, Should i include date and time")
+            snfm = takeCommand()
+            if 'yes' in snfm or 'sure' in snfm:
+                strTime = datetime.datetime.now().strftime("% H:% M:% S")
+                file.write(strTime)
+                file.write(" :- ")
+                file.write(note)
+            else:
+                file.write(note)
+        else:
+            speak("Sorry, I am not able to understand you")
