@@ -38,7 +38,7 @@ def speak(text):
         speak("Good Evening sir or madam!")
 
     asname ="Jasper 1 point o"
-    speak("I am your Voice Assistant from DataFlair,")
+    speak("I am your Assistant,")
     speak(asname)
     print("I am your Voice Assistant,",asname)
 def getName():
